@@ -50,7 +50,7 @@ export default function JenkinsConnectionWizard({ onComplete }: JenkinsConnectio
   const [isLoading, setIsLoading] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   
-  // Form state
+  // Form state with explicitly initialized values for all fields
   const [formData, setFormData] = useState({
     name: '',
     url: '',
@@ -59,6 +59,7 @@ export default function JenkinsConnectionWizard({ onComplete }: JenkinsConnectio
     folder: '',
     customFolder: '',
     authType: AuthType.BASIC,
+    // Initialize all auth fields with empty strings
     username: '',
     token: '',
     password: '',
@@ -101,21 +102,39 @@ export default function JenkinsConnectionWizard({ onComplete }: JenkinsConnectio
     setTestResult(null);
     
     try {
-      // Create connection object for testing
-      const connectionForTest = {
+      // Create connection object for testing with explicit properties
+      const connectionForTest: any = {
         id: Date.now().toString(),
         name: formData.name,
         url: formData.url,
-        authType: formData.authType,
-        username: formData.username || undefined,
-        token: formData.token || undefined,
-        password: formData.password || undefined,
-        ssoToken: formData.ssoToken || undefined,
-        cookieAuth: formData.cookieAuth,
+        // Ensure authType is a string value
+        authType: formData.authType.toString(),
         description: formData.description || undefined,
         color: formData.color,
         folder: formData.folder === 'custom' ? formData.customFolder : formData.folder
       };
+      
+      // Add the specific auth properties based on the auth type
+      switch (formData.authType) {
+        case AuthType.BASIC:
+          connectionForTest.username = formData.username;
+          connectionForTest.token = formData.token;
+          break;
+        case AuthType.TOKEN:
+          connectionForTest.token = formData.token;
+          break;
+        case AuthType.SSO:
+          connectionForTest.ssoToken = formData.ssoToken;
+          connectionForTest.cookieAuth = formData.cookieAuth;
+          break;
+        case AuthType.BASIC_AUTH:
+          connectionForTest.username = formData.username;
+          connectionForTest.password = formData.password;
+          break;
+      }
+      
+      // For debugging - remove in production
+      console.log('Testing connection:', connectionForTest);
       
       const success = await testConnection(connectionForTest);
       
@@ -143,35 +162,39 @@ export default function JenkinsConnectionWizard({ onComplete }: JenkinsConnectio
   };
   
   const handleSave = () => {
-    // Create final connection object
-    const newConnection = {
+    // Create final connection object with all required properties
+    const newConnection: any = {
       id: Date.now().toString(),
       name: formData.name,
       url: formData.url,
-      authType: formData.authType,
+      // Ensure authType is a string value, not an enum reference
+      authType: formData.authType.toString(),
       description: formData.description || undefined,
       color: formData.color,
       folder: formData.folder === 'custom' ? formData.customFolder : formData.folder
     };
     
-    // Add auth-specific properties
+    // Explicitly add auth-specific properties
     switch (formData.authType) {
       case AuthType.BASIC:
-        (newConnection as any).username = formData.username;
-        (newConnection as any).token = formData.token;
+        newConnection.username = formData.username;
+        newConnection.token = formData.token;
         break;
       case AuthType.TOKEN:
-        (newConnection as any).token = formData.token;
+        newConnection.token = formData.token;
         break;
       case AuthType.SSO:
-        (newConnection as any).ssoToken = formData.ssoToken;
-        (newConnection as any).cookieAuth = formData.cookieAuth;
+        newConnection.ssoToken = formData.ssoToken;
+        newConnection.cookieAuth = formData.cookieAuth;
         break;
       case AuthType.BASIC_AUTH:
-        (newConnection as any).username = formData.username;
-        (newConnection as any).password = formData.password;
+        newConnection.username = formData.username;
+        newConnection.password = formData.password;
         break;
     }
+    
+    // For debugging - remove in production
+    console.log('Adding connection:', newConnection);
     
     // Add the connection
     addConnection(newConnection);

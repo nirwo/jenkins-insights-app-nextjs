@@ -23,11 +23,16 @@ class JenkinsServerApiClient {
       validateStatus: (status) => status >= 200 && status < 500 // Only reject on server errors
     };
 
-    // Configure authentication based on the selected type
-    switch (connection.authType) {
-      case AuthType.BASIC:
+    // Normalize authType to handle both string and enum values
+    const authType = connection.authType?.toString()?.toLowerCase();
+    console.log('Configuring authentication for type:', authType);
+
+    // Configure authentication based on the normalized type
+    switch (authType) {
+      case 'basic':
         // Basic authentication with username and token
         if (connection.username && connection.token) {
+          console.log('Using Basic auth with username and token');
           config.auth = {
             username: connection.username,
             password: connection.token
@@ -35,9 +40,10 @@ class JenkinsServerApiClient {
         }
         break;
       
-      case AuthType.TOKEN:
+      case 'token':
         // API token authentication
         if (connection.token) {
+          console.log('Using Token auth');
           config.headers = {
             ...config.headers,
             'Authorization': `Bearer ${connection.token}`
@@ -45,9 +51,10 @@ class JenkinsServerApiClient {
         }
         break;
       
-      case AuthType.SSO:
+      case 'sso':
         // SSO token authentication
         if (connection.ssoToken) {
+          console.log('Using SSO token auth');
           config.headers = {
             ...config.headers,
             'Authorization': `Bearer ${connection.ssoToken}`
@@ -56,13 +63,44 @@ class JenkinsServerApiClient {
         
         // Enable withCredentials for SSO cookie-based auth if needed
         if (connection.cookieAuth) {
+          console.log('Using cookie-based auth');
           config.withCredentials = true;
         }
         break;
       
-      case AuthType.BASIC_AUTH:
+      case 'basic_auth':
         // Basic authentication with username and password
         if (connection.username && connection.password) {
+          console.log('Using Basic auth with username and password');
+          config.auth = {
+            username: connection.username,
+            password: connection.password
+          };
+        }
+        break;
+        
+      default:
+        // Try to infer authentication method from available credentials
+        if (connection.username && connection.token) {
+          console.log('Inferring Basic auth with username and token');
+          config.auth = {
+            username: connection.username,
+            password: connection.token
+          };
+        } else if (connection.token) {
+          console.log('Inferring Token auth');
+          config.headers = {
+            ...config.headers,
+            'Authorization': `Bearer ${connection.token}`
+          };
+        } else if (connection.ssoToken) {
+          console.log('Inferring SSO token auth');
+          config.headers = {
+            ...config.headers,
+            'Authorization': `Bearer ${connection.ssoToken}`
+          };
+        } else if (connection.username && connection.password) {
+          console.log('Inferring Basic auth with username and password');
           config.auth = {
             username: connection.username,
             password: connection.password

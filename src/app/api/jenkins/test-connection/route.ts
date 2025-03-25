@@ -13,14 +13,17 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Create a fully-formed connection object with the proper authType
     const connection = { 
       id: Date.now().toString(), 
       name: 'Test Connection', 
       url, 
-      authType: 'basic' as const, 
+      authType: 'basic', 
       username, 
       token 
     };
+    
+    console.log('Testing connection:', { url, username, hasToken: !!token });
     const client = new JenkinsServerApiClient(connection);
     
     const isConnected = await client.testConnection();

@@ -126,7 +126,7 @@ export const JenkinsProvider: React.FC<JenkinsProviderProps> = ({ children }) =>
     }
   }, [activeConnection]);
 
-  // Helper function to determine auth type
+  // Helper function to determine auth type - ensure we return a string value
   const determineAuthType = (conn: JenkinsConnection): AuthType => {
     if (conn.authType) {
       return conn.authType;

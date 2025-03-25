@@ -13,9 +13,18 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Validate connection based on auth type
-    const { authType } = connection;
+    // Validate connection based on auth type - handle both string and enum values
+    const authType = connection.authType?.toString()?.toLowerCase();
     let isValidConnection = false;
+    
+    console.log('Auth validation:', { 
+      authType,
+      hasUsername: !!connection.username,
+      hasToken: !!connection.token,
+      hasPassword: !!connection.password,
+      hasSsoToken: !!connection.ssoToken,
+      hasCookieAuth: !!connection.cookieAuth
+    });
     
     switch(authType) {
       case 'basic':
@@ -25,13 +34,28 @@ export async function POST(request: NextRequest) {
         isValidConnection = !!connection.token;
         break;
       case 'sso':
-        isValidConnection = !!connection.ssoToken || !!connection.cookieAuth;
+        isValidConnection = !!(connection.ssoToken || connection.cookieAuth);
         break;
       case 'basic_auth':
         isValidConnection = !!(connection.username && connection.password);
         break;
       default:
-        isValidConnection = false;
+        // Try to determine the auth type from the credentials provided
+        if (connection.username && connection.token) {
+          isValidConnection = true;
+          connection.authType = 'basic';
+        } else if (connection.token) {
+          isValidConnection = true;
+          connection.authType = 'token';
+        } else if (connection.ssoToken || connection.cookieAuth) {
+          isValidConnection = true;
+          connection.authType = 'sso';
+        } else if (connection.username && connection.password) {
+          isValidConnection = true;
+          connection.authType = 'basic_auth';
+        } else {
+          isValidConnection = false;
+        }
     }
     
     if (!isValidConnection) {

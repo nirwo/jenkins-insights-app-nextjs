@@ -93,9 +93,12 @@ class JenkinsApiClient {
       validateStatus: (status) => status >= 200 && status < 500 // Only reject on server errors
     };
 
-    // Configure authentication based on the selected type
-    switch (connection.authType) {
-      case AuthType.BASIC:
+    // Normalize authType to handle both string and enum values
+    const authType = connection.authType?.toString()?.toLowerCase();
+    
+    // Configure authentication based on the normalized type
+    switch (authType) {
+      case 'basic':
         // Basic authentication with username and token
         if (connection.username && connection.token) {
           config.auth = {
@@ -105,7 +108,7 @@ class JenkinsApiClient {
         }
         break;
       
-      case AuthType.TOKEN:
+      case 'token':
         // API token authentication
         if (connection.token) {
           config.headers = {
@@ -115,7 +118,7 @@ class JenkinsApiClient {
         }
         break;
       
-      case AuthType.SSO:
+      case 'sso':
         // SSO token authentication
         if (connection.ssoToken) {
           config.headers = {
@@ -130,9 +133,34 @@ class JenkinsApiClient {
         }
         break;
       
-      case AuthType.BASIC_AUTH:
+      case 'basic_auth':
         // Basic authentication with username and password
         if (connection.username && connection.password) {
+          config.auth = {
+            username: connection.username,
+            password: connection.password
+          };
+        }
+        break;
+        
+      default:
+        // Try to infer authentication method from available credentials
+        if (connection.username && connection.token) {
+          config.auth = {
+            username: connection.username,
+            password: connection.token
+          };
+        } else if (connection.token) {
+          config.headers = {
+            ...config.headers,
+            'Authorization': `Bearer ${connection.token}`
+          };
+        } else if (connection.ssoToken) {
+          config.headers = {
+            ...config.headers,
+            'Authorization': `Bearer ${connection.ssoToken}`
+          };
+        } else if (connection.username && connection.password) {
           config.auth = {
             username: connection.username,
             password: connection.password
