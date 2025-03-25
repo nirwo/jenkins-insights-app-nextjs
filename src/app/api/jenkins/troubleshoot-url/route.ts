@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { JenkinsServerApiClient } from '@/lib/jenkins-api-server';
 
+/**
+ * API endpoint for troubleshooting Jenkins URLs
+ * This endpoint accepts a Jenkins URL and connection details,
+ * then analyzes the job/build to provide diagnostic information.
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

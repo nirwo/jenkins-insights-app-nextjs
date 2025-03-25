@@ -1,4 +1,4 @@
-/* Updated globals.css with proper text colors for dark theme */
+/* Updated globals.css with Bootstrap and custom styles */
 @import 'bootstrap/dist/css/bootstrap.min.css';
 
 :root {
@@ -19,13 +19,19 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
+/* Sidebar styles using Bootstrap */
 .sidebar {
   background-color: var(--dark-card);
   border-right: 1px solid var(--dark-border);
   height: 100vh;
   position: fixed;
   width: 250px;
-  padding-top: 20px;
+  transition: width 0.3s ease;
+  z-index: 1030;
+}
+
+.sidebar.collapsed {
+  width: 60px;
 }
 
 .sidebar .nav-link {
@@ -33,6 +39,9 @@ body {
   padding: 10px 15px;
   border-radius: 5px;
   margin: 5px 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sidebar .nav-link:hover {
@@ -44,20 +53,29 @@ body {
   color: white;
 }
 
-.sidebar-brand {
-  padding: 15px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: var(--dark-text);
-  text-align: center;
-  margin-bottom: 20px;
+.sidebar-header {
+  border-bottom: 1px solid var(--dark-border);
 }
 
+.sidebar-content {
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+}
+
+/* Main content area */
 .content {
-  margin-left: 250px;
-  padding: 20px;
+  transition: margin-left 0.3s ease, width 0.3s ease;
   min-height: 100vh;
-  width: calc(100% - 250px); /* Ensure it fills the remaining space */
+}
+
+.content-expanded {
+  margin-left: 250px;
+  width: calc(100% - 250px);
+}
+
+.content-collapsed {
+  margin-left: 60px;
+  width: calc(100% - 60px);
 }
 
 .mobile-nav {

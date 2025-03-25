@@ -1,8 +1,6 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+// Bootstrap utility function to combine class names
+export function combineClasses(...classes: (string | undefined | null | false)[]) {
+  return classes.filter(Boolean).join(' ');
 }
 
 // Simple "encryption" for sensitive data - this is not secure production encryption but adds a layer of obfuscation

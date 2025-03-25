@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useJenkins, AuthType } from '@/lib/jenkins-context';
+import { useJenkins } from '@/lib/jenkins-context';
+import { AuthType } from '@/lib/jenkins-types';
 import { 
   Card, 
   Button, 
@@ -14,12 +15,21 @@ import {
   Col
 } from 'react-bootstrap';
 
+// Define wizard steps
 const WIZARD_STEPS = {
   BASIC_INFO: 0,
   AUTH_SELECTION: 1,
   AUTH_DETAILS: 2,
   VERIFICATION: 3,
   COMPLETE: 4
+};
+
+// Define Auth Type constants for reliability (fallback if enum import fails)
+const AUTH_TYPES = {
+  BASIC: 'basic',
+  TOKEN: 'token',
+  SSO: 'sso',
+  BASIC_AUTH: 'basic_auth'
 };
 
 const FOLDER_OPTIONS = [
@@ -58,7 +68,8 @@ export default function JenkinsConnectionWizard({ onComplete }: JenkinsConnectio
     color: 'primary',
     folder: '',
     customFolder: '',
-    authType: AuthType.BASIC,
+    // Use the fallback AUTH_TYPES constant instead of potentially undefined enum
+    authType: AUTH_TYPES.BASIC,
     // Initialize all auth fields with empty strings
     username: '',
     token: '',
@@ -116,18 +127,18 @@ export default function JenkinsConnectionWizard({ onComplete }: JenkinsConnectio
       
       // Add the specific auth properties based on the auth type
       switch (formData.authType) {
-        case AuthType.BASIC:
+        case AUTH_TYPES.BASIC:
           connectionForTest.username = formData.username;
           connectionForTest.token = formData.token;
           break;
-        case AuthType.TOKEN:
+        case AUTH_TYPES.TOKEN:
           connectionForTest.token = formData.token;
           break;
-        case AuthType.SSO:
+        case AUTH_TYPES.SSO:
           connectionForTest.ssoToken = formData.ssoToken;
           connectionForTest.cookieAuth = formData.cookieAuth;
           break;
-        case AuthType.BASIC_AUTH:
+        case AUTH_TYPES.BASIC_AUTH:
           connectionForTest.username = formData.username;
           connectionForTest.password = formData.password;
           break;
@@ -176,18 +187,18 @@ export default function JenkinsConnectionWizard({ onComplete }: JenkinsConnectio
     
     // Explicitly add auth-specific properties
     switch (formData.authType) {
-      case AuthType.BASIC:
+      case AUTH_TYPES.BASIC:
         newConnection.username = formData.username;
         newConnection.token = formData.token;
         break;
-      case AuthType.TOKEN:
+      case AUTH_TYPES.TOKEN:
         newConnection.token = formData.token;
         break;
-      case AuthType.SSO:
+      case AUTH_TYPES.SSO:
         newConnection.ssoToken = formData.ssoToken;
         newConnection.cookieAuth = formData.cookieAuth;
         break;
-      case AuthType.BASIC_AUTH:
+      case AUTH_TYPES.BASIC_AUTH:
         newConnection.username = formData.username;
         newConnection.password = formData.password;
         break;
@@ -213,13 +224,13 @@ export default function JenkinsConnectionWizard({ onComplete }: JenkinsConnectio
         return true; // Auth type is always selected
       case WIZARD_STEPS.AUTH_DETAILS:
         switch (formData.authType) {
-          case AuthType.BASIC:
+          case AUTH_TYPES.BASIC:
             return formData.username.trim() !== '' && formData.token.trim() !== '';
-          case AuthType.TOKEN:
+          case AUTH_TYPES.TOKEN:
             return formData.token.trim() !== '';
-          case AuthType.SSO:
+          case AUTH_TYPES.SSO:
             return formData.ssoToken.trim() !== '';
-          case AuthType.BASIC_AUTH:
+          case AUTH_TYPES.BASIC_AUTH:
             return formData.username.trim() !== '' && formData.password.trim() !== '';
           default:
             return false;
@@ -367,9 +378,9 @@ export default function JenkinsConnectionWizard({ onComplete }: JenkinsConnectio
         
         <div className="d-grid gap-2">
           <Button 
-            variant={formData.authType === AuthType.BASIC ? 'primary' : 'outline-primary'}
+            variant={formData.authType === AUTH_TYPES.BASIC ? 'primary' : 'outline-primary'}
             className="text-start p-3"
-            onClick={() => setFormData(prev => ({ ...prev, authType: AuthType.BASIC }))}
+            onClick={() => setFormData(prev => ({ ...prev, authType: AUTH_TYPES.BASIC }))}
           >
             <div className="d-flex align-items-center">
               <div className="me-3">
@@ -383,9 +394,9 @@ export default function JenkinsConnectionWizard({ onComplete }: JenkinsConnectio
           </Button>
           
           <Button 
-            variant={formData.authType === AuthType.TOKEN ? 'primary' : 'outline-primary'}
+            variant={formData.authType === AUTH_TYPES.TOKEN ? 'primary' : 'outline-primary'}
             className="text-start p-3"
-            onClick={() => setFormData(prev => ({ ...prev, authType: AuthType.TOKEN }))}
+            onClick={() => setFormData(prev => ({ ...prev, authType: AUTH_TYPES.TOKEN }))}
           >
             <div className="d-flex align-items-center">
               <div className="me-3">
@@ -399,9 +410,9 @@ export default function JenkinsConnectionWizard({ onComplete }: JenkinsConnectio
           </Button>
           
           <Button 
-            variant={formData.authType === AuthType.SSO ? 'primary' : 'outline-primary'}
+            variant={formData.authType === AUTH_TYPES.SSO ? 'primary' : 'outline-primary'}
             className="text-start p-3"
-            onClick={() => setFormData(prev => ({ ...prev, authType: AuthType.SSO }))}
+            onClick={() => setFormData(prev => ({ ...prev, authType: AUTH_TYPES.SSO }))}
           >
             <div className="d-flex align-items-center">
               <div className="me-3">
@@ -415,9 +426,9 @@ export default function JenkinsConnectionWizard({ onComplete }: JenkinsConnectio
           </Button>
           
           <Button 
-            variant={formData.authType === AuthType.BASIC_AUTH ? 'primary' : 'outline-primary'}
+            variant={formData.authType === AUTH_TYPES.BASIC_AUTH ? 'primary' : 'outline-primary'}
             className="text-start p-3"
-            onClick={() => setFormData(prev => ({ ...prev, authType: AuthType.BASIC_AUTH }))}
+            onClick={() => setFormData(prev => ({ ...prev, authType: AUTH_TYPES.BASIC_AUTH }))}
           >
             <div className="d-flex align-items-center">
               <div className="me-3">

@@ -1,8 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Sidebar, SidebarNav, SidebarNavItem, SidebarSection, SidebarDivider, SidebarFooter } from './ui/sidebar';
+import { combineClasses } from '@/lib/utils';
+import { useJenkins } from '@/lib/jenkins-context';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,83 +13,119 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const pathname = usePathname();
+  const { activeConnection } = useJenkins();
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
   
   const isActive = (path: string) => {
-    return pathname === path ? 'active' : '';
+    return pathname === path;
+  };
+  
+  const handleToggleSidebar = () => {
+    setSidebarExpanded(!sidebarExpanded);
   };
   
   return (
-    <div className="d-flex">
-      {/* Sidebar for desktop */}
-      <div className="sidebar d-none d-md-block">
-        <div className="sidebar-brand">
-          Jenkins Insights
-        </div>
-        <ul className="nav flex-column">
-          <li className="nav-item">
-            <Link href="/" className={`nav-link ${isActive('/')}`}>
-              <i className="bi bi-speedometer2 me-2"></i>
+    <div className="d-flex h-100">
+      {/* Bootstrap Sidebar for desktop */}
+      <Sidebar 
+        expanded={sidebarExpanded} 
+        onToggle={handleToggleSidebar}
+        className="d-none d-md-block"
+      >
+        <SidebarNav>
+          <SidebarSection>
+            <SidebarNavItem 
+              href="/" 
+              active={isActive('/')} 
+              icon="speedometer2"
+            >
               Dashboard
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link href="/jobs" className={`nav-link ${isActive('/jobs')}`}>
-              <i className="bi bi-list-check me-2"></i>
+            </SidebarNavItem>
+            
+            <SidebarNavItem 
+              href="/jobs" 
+              active={isActive('/jobs')} 
+              icon="list-check"
+            >
               Jobs
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link href="/troubleshooting" className={`nav-link ${isActive('/troubleshooting')}`}>
-              <i className="bi bi-tools me-2"></i>
+            </SidebarNavItem>
+            
+            <SidebarNavItem 
+              href="/troubleshooting" 
+              active={isActive('/troubleshooting')} 
+              icon="tools"
+            >
               Troubleshooting
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link href="/advanced-troubleshooting" className={`nav-link ${isActive('/advanced-troubleshooting')}`}>
-              <i className="bi bi-wrench-adjustable me-2"></i>
+            </SidebarNavItem>
+            
+            <SidebarNavItem 
+              href="/advanced-troubleshooting" 
+              active={isActive('/advanced-troubleshooting')} 
+              icon="wrench-adjustable"
+            >
               Advanced Troubleshooting
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link href="/settings" className={`nav-link ${isActive('/settings')}`}>
-              <i className="bi bi-gear me-2"></i>
+            </SidebarNavItem>
+          </SidebarSection>
+          
+          <SidebarDivider />
+          
+          <SidebarSection title={sidebarExpanded ? "Settings & Info" : ""}>
+            <SidebarNavItem 
+              href="/settings" 
+              active={isActive('/settings')} 
+              icon="gear"
+            >
               Settings
-            </Link>
-          </li>
-        </ul>
-      </div>
+            </SidebarNavItem>
+          </SidebarSection>
+        </SidebarNav>
+        
+        {activeConnection && sidebarExpanded && (
+          <SidebarFooter>
+            <div className="d-flex align-items-center">
+              <span className={`badge bg-${activeConnection.color || 'primary'} me-2`}></span>
+              <small className="text-truncate">{activeConnection.name}</small>
+            </div>
+          </SidebarFooter>
+        )}
+      </Sidebar>
       
-      {/* Main content */}
-      <div className="content">
-        {children}
+      {/* Main content area with Bootstrap grid */}
+      <div className={combineClasses(
+        'content',
+        sidebarExpanded ? 'content-expanded' : 'content-collapsed'
+      )}>
+        <div className="container-fluid py-3">
+          {children}
+        </div>
       </div>
       
       {/* Bottom navigation for mobile */}
       <div className="mobile-nav d-md-none">
         <div className="container">
           <div className="row">
-            <div className="col">
-              <Link href="/" className={`nav-link ${isActive('/')}`}>
-                <i className="bi bi-speedometer2 d-block"></i>
-                Dashboard
+            <div className="col text-center">
+              <Link href="/" className={combineClasses('nav-link', isActive('/') ? 'active' : '')}>
+                <i className="bi bi-speedometer2 d-block mb-1"></i>
+                <small>Dashboard</small>
               </Link>
             </div>
-            <div className="col">
-              <Link href="/jobs" className={`nav-link ${isActive('/jobs')}`}>
-                <i className="bi bi-list-check d-block"></i>
-                Jobs
+            <div className="col text-center">
+              <Link href="/jobs" className={combineClasses('nav-link', isActive('/jobs') ? 'active' : '')}>
+                <i className="bi bi-list-check d-block mb-1"></i>
+                <small>Jobs</small>
               </Link>
             </div>
-            <div className="col">
-              <Link href="/troubleshooting" className={`nav-link ${isActive('/troubleshooting')}`}>
-                <i className="bi bi-tools d-block"></i>
-                Troubleshoot
+            <div className="col text-center">
+              <Link href="/troubleshooting" className={combineClasses('nav-link', isActive('/troubleshooting') ? 'active' : '')}>
+                <i className="bi bi-tools d-block mb-1"></i>
+                <small>Troubleshoot</small>
               </Link>
             </div>
-            <div className="col">
-              <Link href="/settings" className={`nav-link ${isActive('/settings')}`}>
-                <i className="bi bi-gear d-block"></i>
-                Settings
+            <div className="col text-center">
+              <Link href="/settings" className={combineClasses('nav-link', isActive('/settings') ? 'active' : '')}>
+                <i className="bi bi-gear d-block mb-1"></i>
+                <small>Settings</small>
               </Link>
             </div>
           </div>

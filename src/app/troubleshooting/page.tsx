@@ -137,9 +137,16 @@ export default function Troubleshooting() {
         </Alert>
       )}
       
-      {/* Import and use the TroubleshootByUrl component */}
+      {/* URL-based troubleshooting component */}
       <div style={{ minHeight: '400px' }}> {/* Ensure minimum height for content */}
-        <TroubleshootByUrl />
+        <Suspense fallback={
+          <div className="text-center my-4">
+            <Spinner animation="border" role="status" />
+            <p className="mt-2">Loading URL troubleshooting tool...</p>
+          </div>
+        }>
+          <TroubleshootByUrl />
+        </Suspense>
       </div>
       
       {/* Issue Detection */}

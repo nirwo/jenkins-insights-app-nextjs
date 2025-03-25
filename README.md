@@ -8,30 +8,41 @@ A modern web application for Jenkins CI/CD monitoring and troubleshooting.
 - Job listing and filtering
 - Build details and console output analysis
 - Issue detection and troubleshooting
+- URL-based job troubleshooting
 - Multiple Jenkins server connections
 - Secure credential storage
 
 ## Key Improvements
 
+### UI Framework
+- **Bootstrap 5**: Modern UI components with responsive design
+- **Collapsible Sidebar**: Space-efficient navigation interface
+- **Mobile-First Design**: Optimized experience across all devices
+- **Dark Theme**: Improved readability for long troubleshooting sessions
+
 ### Performance Enhancements
 - **Caching System**: Implemented a caching layer to reduce redundant API calls
 - **Parallel Processing**: Issue analysis now processes jobs in parallel
 - **Optimized Console Parsing**: Two-stage approach for faster log analysis
+- **Framework Optimization**: Reduced bundle size with lean CSS approach
 
 ### Security Enhancements
 - **Credential Protection**: Sensitive data is encrypted before storage
 - **Masking System**: Credentials are automatically masked in logs
 - **Input Validation**: Improved validation for user inputs
+- **Access Controls**: Proper separation of client/server components
 
 ### Reliability Improvements
 - **Request Retry**: Automatic retry mechanism for API failures
 - **Timeout Handling**: Configurable timeouts to prevent hanging requests
 - **Type Safety**: Improved TypeScript typing throughout the codebase
+- **Framework Compatibility**: Enhanced support for React 19
 
 ### Error Handling
 - **Consistent Error Patterns**: Standardized error handling across the app
 - **User-friendly Messages**: Better error messages for troubleshooting
 - **Graceful Degradation**: Components handle error states gracefully
+- **Enhanced Troubleshooting**: URL-based analysis for quick diagnosis
 
 ## Deployment Options
 
@@ -128,6 +139,7 @@ pnpm exec wrangler publish
 - **Jobs Page**: List, filter, and search all Jenkins jobs
 - **Job Details**: View build history, console output, and test results
 - **Troubleshooting**: Automatically detect and analyze issues
+- **URL Troubleshooting**: Paste a Jenkins build URL to quickly analyze issues
 
 ## Testing
 
@@ -151,7 +163,7 @@ node tests/manual-test.js
 - React 19
 - TypeScript
 - Axios
-- Bootstrap (UI components)
+- Bootstrap 5 (UI framework)
 - Jest (testing)
 
 ## Requirements

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useJenkins } from '@/lib/jenkins-context';
 import { 
   Card, 
@@ -23,6 +23,19 @@ export default function TroubleshootByUrl() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<any>(null);
+  const [recentUrls, setRecentUrls] = useState<string[]>([]);
+  
+  // Load recent URLs from localStorage on component mount
+  useEffect(() => {
+    try {
+      const savedUrls = localStorage.getItem('recentJenkinsUrls');
+      if (savedUrls) {
+        setRecentUrls(JSON.parse(savedUrls));
+      }
+    } catch (err) {
+      console.error('Error loading recent URLs:', err);
+    }
+  }, []);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,23 +50,58 @@ export default function TroubleshootByUrl() {
       return;
     }
     
+    // Basic URL validation
+    try {
+      new URL(url);
+    } catch {
+      setError('Please enter a valid URL (e.g., https://jenkins.example.com/job/my-job)');
+      return;
+    }
+    
+    // Check if URL looks like a Jenkins URL
+    if (!url.includes('/job/') && !url.includes('/view/')) {
+      setError('URL does not appear to be a Jenkins job URL. It should contain "/job/" in the path.');
+      return;
+    }
+    
     setIsLoading(true);
     setError(null);
     setResult(null);
     
     try {
+      console.log('Troubleshooting URL:', url);
       const response = await axios.post('/api/jenkins/troubleshoot-url', {
         connection: activeConnection,
         url
+      }, {
+        timeout: 60000 // Longer timeout for potentially slow Jenkins servers
       });
       
       if (response.data.success) {
+        console.log('Troubleshooting result:', response.data.data);
         setResult(response.data.data);
+        
+        // Save URL to recent URLs
+        const updatedRecentUrls = [url, ...recentUrls.filter(u => u !== url)].slice(0, 5);
+        setRecentUrls(updatedRecentUrls);
+        localStorage.setItem('recentJenkinsUrls', JSON.stringify(updatedRecentUrls));
       } else {
+        console.error('Troubleshooting error:', response.data.error);
         setError(response.data.error || 'Failed to troubleshoot the URL');
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'An error occurred');
+      console.error('Request error:', err);
+      
+      // Handle specific error cases
+      if (err.code === 'ECONNABORTED') {
+        setError('Request timed out. The Jenkins server might be slow or unresponsive.');
+      } else if (err.response?.status === 404) {
+        setError('API endpoint not found. Please ensure the application is properly configured.');
+      } else if (err.response?.status === 400) {
+        setError(err.response.data?.error || 'Invalid request. The URL might not be a valid Jenkins job URL.');
+      } else {
+        setError(err.response?.data?.error || err.message || 'An error occurred while troubleshooting the URL');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -121,6 +169,37 @@ export default function TroubleshootByUrl() {
               Enter a Jenkins job or build URL to troubleshoot
             </Form.Text>
           </Form.Group>
+          
+          {/* Recent URLs */}
+          {recentUrls.length > 0 && (
+            <div className="mt-2">
+              <small className="text-muted">Recent URLs:</small>
+              <div className="d-flex flex-wrap gap-1 mt-1">
+                {recentUrls.map((recentUrl, index) => (
+                  <Button 
+                    key={index}
+                    variant="outline-secondary" 
+                    size="sm"
+                    onClick={() => setUrl(recentUrl)}
+                    style={{ fontSize: '0.8rem' }}
+                  >
+                    {new URL(recentUrl).pathname.split('/').slice(-2).join('/')}
+                  </Button>
+                ))}
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => {
+                    localStorage.removeItem('recentJenkinsUrls');
+                    setRecentUrls([]);
+                  }}
+                  style={{ fontSize: '0.8rem' }}
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
+          )}
         </Form>
         
         {error && (
