@@ -1,10 +1,23 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Card, Table, Badge, Button, Tabs, Tab, Spinner, Alert, Form, InputGroup } from 'react-bootstrap';
+import React, { useState, useEffect, Suspense } from 'react';
+import { Card, Table, Badge, Button, Tabs, Tab, Spinner, Alert, Form, InputGroup, Row, Col } from 'react-bootstrap';
 import { useJenkins } from '@/lib/jenkins-context';
 import { useSystemData, useIssueAnalysis } from '@/hooks/useJenkinsData';
 import Layout from '@/components/Layout';
+import dynamic from 'next/dynamic';
+
+// Dynamically import the TroubleshootByUrl component to avoid server/client mismatch
+const TroubleshootByUrl = dynamic(() => import('@/components/TroubleshootByUrl'), {
+  ssr: false,
+  loading: () => (
+    <div className="text-center my-4">
+      <Spinner animation="border" role="status">
+        <span className="visually-hidden">Loading troubleshooting component...</span>
+      </Spinner>
+    </div>
+  )
+});
 
 // Component for displaying build status
 const BuildStatusBadge = ({ status }) => {
@@ -97,16 +110,21 @@ export default function Troubleshooting() {
   return (
     <Layout>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Troubleshooting</h2>
+        <h2><i className="bi bi-tools me-2"></i>Troubleshooting</h2>
         <div>
-          <Button variant="primary" onClick={refreshAnalysis} disabled={isLoading}>
+          <Button 
+            variant="primary" 
+            onClick={refreshAnalysis} 
+            disabled={isLoading}
+            className="px-4" // Make button wider
+          >
             {isLoading ? (
               <>
                 <Spinner animation="border" size="sm" className="me-2" />
                 Analyzing...
               </>
             ) : (
-              'Analyze Issues'
+              <><i className="bi bi-lightning-charge me-2"></i>Analyze Issues</>
             )}
           </Button>
         </div>
@@ -114,10 +132,15 @@ export default function Troubleshooting() {
       
       {error && (
         <Alert variant="danger">
-          <Alert.Heading>Error</Alert.Heading>
+          <Alert.Heading><i className="bi bi-exclamation-triangle me-2"></i>Error</Alert.Heading>
           <p>{error}</p>
         </Alert>
       )}
+      
+      {/* Import and use the TroubleshootByUrl component */}
+      <div style={{ minHeight: '400px' }}> {/* Ensure minimum height for content */}
+        <TroubleshootByUrl />
+      </div>
       
       {/* Issue Detection */}
       <Card className="mb-4">

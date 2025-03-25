@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import JenkinsApiClient from '@/lib/jenkins-api';
+import { JenkinsServerApiClient } from '@/lib/jenkins-api-server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const client = new JenkinsApiClient(connection);
+    const client = new JenkinsServerApiClient(connection);
     
     // Get jobs with a timeout (30 seconds)
     const jobs = await client.getJobs();

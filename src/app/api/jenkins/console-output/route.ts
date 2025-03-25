@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import JenkinsApiClient from '@/lib/jenkins-api';
+import { JenkinsServerApiClient } from '@/lib/jenkins-api-server';
 import { maskSensitiveData } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const client = new JenkinsApiClient(connection);
+    const client = new JenkinsServerApiClient(connection);
     
     // Get build console output
     const consoleOutput = await client.getBuildConsoleOutput(jobName, buildNumber);

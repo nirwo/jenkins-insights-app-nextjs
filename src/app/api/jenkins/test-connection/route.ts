@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import JenkinsApiClient from '@/lib/jenkins-api';
+import { JenkinsServerApiClient } from '@/lib/jenkins-api-server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,8 +13,15 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const connection = { id: Date.now().toString(), name: 'Test Connection', url, username, token };
-    const client = new JenkinsApiClient(connection);
+    const connection = { 
+      id: Date.now().toString(), 
+      name: 'Test Connection', 
+      url, 
+      authType: 'basic' as const, 
+      username, 
+      token 
+    };
+    const client = new JenkinsServerApiClient(connection);
     
     const isConnected = await client.testConnection();
     
